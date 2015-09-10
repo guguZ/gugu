@@ -1,0 +1,52 @@
+﻿<?xml version='1.0' encoding='UTF-8'?>
+<project name='SDP' default='all' basedir='.'>
+
+	<property file="build_aws.properties" />
+	
+	<target name="settings">
+
+		<tstamp>
+			<format property="timestamp" pattern="yyyyMMdd_HHmmss_SSS" />
+		</tstamp>
+		
+	</target>
+
+	<target name='all' depends='deploy'>
+		<antcall target="deploy" />
+	</target>
+	
+	<taskdef name="ssh" classname="com.sshtools.ant.Ssh" />
+
+	<target name='deploy'>
+
+		<echo message="- 1. send-ftp-was ======= " />
+		<antcall target="send-ftp-was">
+			<param name="ftp.server" value="${target.server_dev}" />
+			<param name="ftp.user" value="${target.server.user_dev}" />
+			<param name="ftp.password" value="${target.server.password_dev}" />
+			<param name="ftp.remotedir" value="${target.dir_dev}" />
+			<param name="ftp.localdir" value="." />
+		</antcall>
+
+
+	</target>
+	
+	<target name='send-ftp-was' description='ftp'>
+		<echo message="connecting ${ftp.server} ..." />
+		<echo message="user       ${ftp.user} ..." />
+		<echo message="remotedir  ${ftp.remotedir} ..." />
+		<echo message="localdir   ${ftp.localdir} ..." />
+
+		<ssh host="${ftp.server}" username="${ftp.user}" password="${ftp.password}"	version="2">
+
+			<exec cmd="export TMOUT=" />
+			<sftp action="put" remotedir="${ftp.remotedir}" verbose="false"	depends="true">
+				<fileset dir="/tmp" includes="awstest.war" />
+			</sftp>
+		</ssh>
+
+		<echo message="sending is finished." />
+	</target>
+	
+	
+</project>
